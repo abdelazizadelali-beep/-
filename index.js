@@ -39,7 +39,7 @@ app.post('/webhook', async (req, res) => {
                 const userMessage = message.text.body;
 
                 const geminiResponse = await axios.post(
-                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5pro:generateContent?key=${GEMINI_API_KEY}`,
+                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${GEMINI_API_KEY}`,
                     {
                         contents: [
                             {
