@@ -1,6 +1,5 @@
 import express from 'express';
 import axios from 'axios';
-import { GoogleGenAI } from '@google/genai';
 
 const app = express();
 app.use(express.json());
@@ -8,8 +7,7 @@ app.use(express.json());
 const PORT = process.env.PORT || 3000;
 const VERIFY_TOKEN = process.env.VERIFY_TOKEN;
 const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN;
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 app.get('/webhook', (req, res) => {
     const mode = req.query['hub.mode'];
@@ -40,12 +38,18 @@ app.post('/webhook', async (req, res) => {
                 const recipientNumber = message.from;
                 const userMessage = message.text.body;
 
-                const response = await ai.models.generateContent({
-                    model: 'gemini-1.5-flash',
-                    contents: userMessage,
-                });
+                const geminiResponse = await axios.post(
+                    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+                    {
+                        contents: [
+                            {
+                                parts: [{ text: userMessage }]
+                            }
+                        ]
+                    }
+                );
 
-                const botReply = response.text || "Sorry, I couldn't process that.";
+                const botReply = geminiResponse.data?.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't process that.";
 
                 await axios.post(
                     `https://graph.facebook.com/v19.0/me/messages`,
